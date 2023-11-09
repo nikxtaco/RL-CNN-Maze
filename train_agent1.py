@@ -20,7 +20,7 @@ if __name__=='__main__':
     N_ENVS = 2
     N_STEPS = 500
     RENDER_MAZE = True # Make False
-    CHECKPOINT_PATH = 'logs/agent1/model_'
+    CHECKPOINT_PATH = 'saved_models/agent1/model_'
     LOAD_FROM_TIMESTEP = str(1000)
     PERFORMANCE_FILE = "performance_agent1.csv"
     N_CHECKPOINTS = 2
