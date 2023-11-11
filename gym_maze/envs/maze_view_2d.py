@@ -7,7 +7,7 @@ import os
 class MazeView2D:
 
     def __init__(self, maze_name="Maze2D", maze_file_path=None,
-                 maze_size=(30, 30), screen_size=(600, 600),
+                 maze_size=(30, 30), screen_size=(256, 256),
                  has_loops=False, num_portals=0, enable_render=True, seed=None):
 
         # Set the random seed
