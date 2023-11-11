@@ -22,7 +22,7 @@ class PPO(BaseAgent):
                  n_envs=4,
                  epoch=1,
                  mini_batch_per_epoch=1,
-                 mini_batch_size=4*1, # The first batch value in array
+                 mini_batch_size=4*1,
                  gamma=0.99,
                  lmbda=0.95,
                  learning_rate=2.5e-4,
@@ -56,8 +56,6 @@ class PPO(BaseAgent):
         self.use_gae = use_gae
 
     def preprocess_observation(self, obs):
-        # print(f'Before Preprocess:{obs.shape}')
-        # obs[obs.astype(np.float32) < 255] = 0
         obs = obs.astype(np.float32) / 255.0  # Normalize to the range [0, 1]
         obs = obs.transpose((0, 3, 1, 2))  # Transpose channels to match policy network's input format
         return obs
