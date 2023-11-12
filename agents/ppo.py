@@ -55,18 +55,17 @@ class PPO(BaseAgent):
         self.normalize_rew = normalize_rew
         self.use_gae = use_gae
 
-    def preprocess_observation(self, obs):
+    def preprocess_observation(self, obs): # Added
         obs = obs.astype(np.float32) / 255.0  # Normalize to the range [0, 1]
         obs = obs.transpose((0, 3, 1, 2))  # Transpose channels to match policy network's input format
         return obs
 
-    def map_int_to_char(self, action_value):
+    def map_int_to_char(self, action_value): # Added
         DISCRETE_ACTIONS = ["N", "S", "E", "W"]
         discrete_actions = np.empty(len(action_value), dtype=np.dtype('U1'))
 
         for i in range(len(action_value)):
             action = action_value[i]
-            # Map continuous action to a discrete action based on thresholds
             if action == 0:
                 discrete_actions[i] = DISCRETE_ACTIONS[0]
             elif action == 1:
@@ -86,9 +85,7 @@ class PPO(BaseAgent):
             mask = torch.FloatTensor(1 - done).to(device=self.device)
             dist, value, hidden_state = self.policy(obs, hidden_state, mask)
             act = dist.sample()
-            # print(f'act:{act}') # Added
             log_prob_act = dist.log_prob(act)
-            # print(f'log:{log_prob_act}') # Added
         return act.cpu().numpy(), log_prob_act.cpu().numpy(), value.cpu().numpy(), hidden_state.cpu().numpy()
 
     def predict_w_value_saliency(self, obs, hidden_state, done):
@@ -232,6 +229,7 @@ class PPO(BaseAgent):
             value_batch = self.storage.value_batch[:self.n_steps]
             _, _, last_val, hidden_state = self.predict(obs, hidden_state, done)
             self.storage.store_last(obs, hidden_state, last_val)
+
             # Compute advantage estimates
             self.storage.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
@@ -254,6 +252,7 @@ class PPO(BaseAgent):
             summary = self.optimize()
 
             # Log the training-procedure (Removed)
+            
             self.t += self.n_steps * self.n_envs
 
             self.optimizer = adjust_lr(self.optimizer, self.learning_rate, self.t, num_timesteps)
