@@ -31,7 +31,7 @@ class CategoricalPolicy(nn.Module):
         if self.recurrent:
             hidden, hx = self.gru(hidden, hx, masks)
         logits = self.fc_policy(hidden)
-        log_probs = F.log_softmax(logits, dim=1) # Changed?
+        log_probs = F.log_softmax(logits, dim=1)
         p = Categorical(logits=log_probs)
         v = self.fc_value(hidden).reshape(-1)
         return p, v, hx
