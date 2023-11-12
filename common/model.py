@@ -106,25 +106,17 @@ class ImpalaModel(nn.Module):
         self.apply(xavier_uniform_init)
 
     def forward(self, x):
-        # print(f'model:{x}')
         x = self.block1(x)
         x = self.block2(x)
         x = self.block3(x)
         # x = nn.ReLU()(x)
-        # # print(x.shape)
         # x = Flatten()(x)
-        # # print(x.shape)
         # # x = self.fc(x)
-        # # print(x.shape)
         # x = nn.ReLU()(x)
-        # print(f'embedder final:{x.shape}')
         # Rearranged commented to below as per original impala
         x = Flatten()(x)
-        # print(x.shape)
         x = nn.ReLU()(x)
-        # print(x.shape)
         x = self.fc(x)
-        # print(f'embedder final:{x.shape}')
         return x
 
 
