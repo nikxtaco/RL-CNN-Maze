@@ -16,3 +16,4 @@ python setup.py install
 - logs and performance data are saved into performance_agent#.csv
 <!-- - run cnn_plot_agent#.py to plot performance graph #todo: mean rewards -->
 <!-- - cnn_test.py is incomplete -->
+<!-- yet to check equivalence of environments, attempt render side by side?-->
