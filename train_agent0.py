@@ -16,12 +16,13 @@ def make_env(rank):
     return init
 
 if __name__=='__main__':
-    MAX_T = 2000
+    MAX_T = 50000
     N_ENVS = 2
     N_STEPS = 500
     RENDER_MAZE = True # Make False
-    CHECKPOINT_PATH = 'saved_models/agent0/model_'
+    CHECKPOINT_PATH = 'saved_models/agent0/'
     LOAD_FROM_TIMESTEP = str(1000)
+    LOG_FILE = "log_agent0.csv"
     PERFORMANCE_FILE = "performance_agent0.csv"
     N_CHECKPOINTS = 2
 
@@ -57,15 +58,32 @@ if __name__=='__main__':
 
     agent = AGENT(env, policy, logger=None, storage=storage, device=device, n_checkpoints=N_CHECKPOINTS, n_steps=N_STEPS, n_envs=N_ENVS)
     
-    # Load Model
-    if os.path.exists(CHECKPOINT_PATH + LOAD_FROM_TIMESTEP + '.pt'):
-        print("Loading file...")
-        checkpoint = torch.load(CHECKPOINT_PATH + LOAD_FROM_TIMESTEP + '.pt')
-        agent.policy.load_state_dict(checkpoint['model_state_dict']) #, map_location=torch.device(device))
-        print("Model policy loaded.")
-        print("Loading file...")
-        agent.optimizer.load_state_dict(checkpoint['optimizer_state_dict']) #, map_location=torch.device(device))
-        print("Model optimizer loaded.")
+    # To load the most recent checkpoint
+    if os.path.exists(CHECKPOINT_PATH):
+        all_files = os.listdir(CHECKPOINT_PATH)
+        checkpoint_files = [file for file in all_files if file.endswith('.pt')]
+
+        if checkpoint_files:
+            latest_checkpoint = max(checkpoint_files)
+            checkpoint_path = os.path.join(CHECKPOINT_PATH, latest_checkpoint)
+            checkpoint = torch.load(checkpoint_path)
+            print(f'Loading checkpoint from {checkpoint_path}')
+            agent.policy.load_state_dict(checkpoint['model_state_dict']) #, map_location=torch.device(device))
+            print("Model policy loaded.")
+            agent.optimizer.load_state_dict(checkpoint['optimizer_state_dict']) #, map_location=torch.device(device))
+            print("Model optimizer loaded.")
+        else:
+            print("No checkpoint files found.")
+
+    # # To load a specific checkpoint
+    # if os.path.exists(CHECKPOINT_PATH + "model_" + LOAD_FROM_TIMESTEP + '.pt'):
+    #     print("Loading file...")
+    #     checkpoint = torch.load(CHECKPOINT_PATH + "model_" + LOAD_FROM_TIMESTEP + '.pt')
+    #     print(f'Loading checkpoint from {checkpoint_path}')
+    #     agent.policy.load_state_dict(checkpoint['model_state_dict']) #, map_location=torch.device(device))
+    #     print("Model policy loaded.")
+    #     agent.optimizer.load_state_dict(checkpoint['optimizer_state_dict']) #, map_location=torch.device(device))
+    #     print("Model optimizer loaded.")
 
     print('START TRAINING...')
-    agent.train(MAX_T, CHECKPOINT_PATH, PERFORMANCE_FILE)
+    agent.train(MAX_T, CHECKPOINT_PATH, LOG_FILE, PERFORMANCE_FILE)

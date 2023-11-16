@@ -158,10 +158,10 @@ class PPO(BaseAgent):
         summary = {'Loss/pi': np.mean(pi_loss_list),
                    'Loss/v': np.mean(value_loss_list),
                    'Loss/entropy': np.mean(entropy_loss_list)}
-        print(summary)
+        # print(summary)
         return summary
 
-    def train(self, num_timesteps, checkpoint_path, performance_log_file):
+    def train(self, num_timesteps, checkpoint_path, log_file, performance_file):
         save_every = num_timesteps // self.num_checkpoints
         checkpoint_cnt = 0
         obs = self.env.reset()
@@ -178,35 +178,56 @@ class PPO(BaseAgent):
 
         # Added below blocks to determine the starting episode number by reading from the CSV file
         cur_episode = 0
-        if os.path.exists(performance_log_file):
-            with open(performance_log_file, 'r') as csvfile:
+        if os.path.exists(log_file):
+            with open(log_file, 'r') as csvfile:
                 reader = csv.reader(csvfile)
                 rows = list(reader)
-                print(len(rows))
                 if len(rows) > 1: # Check if there's at least one row of data (excluding the header)
                     cur_episode = int(rows[-1][0]) + 1
                 else:
-                    with open(performance_log_file, 'w', newline='') as csvfile:
+                    with open(log_file, 'w', newline='') as csvfile:
                         fieldnames = ['Episode', 'Env', 'Steps', 'Reward']
                         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                         writer.writeheader()
         else:
-            with open(performance_log_file, 'w', newline='') as csvfile:
+            with open(log_file, 'w', newline='') as csvfile:
                 fieldnames = ['Episode', 'Env', 'Steps', 'Reward']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writeheader()
 
-        # Open the file in append mode ('a') outside the loop
-        csvfile = open(performance_log_file, 'a', newline='')
+        if os.path.exists(performance_file):
+            with open(performance_file, 'r') as csvfile:
+                reader = csv.reader(csvfile)
+                rows = list(reader)
+                if len(rows) > 1: # Check if there's at least one row of data (excluding the header)
+                    cur_episode = int(rows[-1][0]) + 1
+                else:
+                    with open(performance_file, 'w', newline='') as csvfile:
+                        fieldnames = ['Episode', 'Loss/pi', 'Loss/v', 'Loss/entropy']
+                        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                        writer.writeheader()
+        else:
+            with open(performance_file, 'w', newline='') as csvfile:
+                fieldnames = ['Episode', 'Loss/pi', 'Loss/v', 'Loss/entropy']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+
+        csvfile = open(log_file, 'a', newline='')
         fieldnames = ['Episode', 'Env', 'Steps', 'Reward']
+        log_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        csvfile = open(performance_file, 'a', newline='')
+        fieldnames = ['Episode', 'Loss/pi', 'Loss/v', 'Loss/entropy']
         performance_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
+        cur_time = 0 # Added
         while self.t < num_timesteps:
             # Run Policy
             self.policy.eval()
-            cur_time = 0 # Added
+            # cur_time = 0 # Added
+            # self.env.reset() # Added
             for i in range(self.n_steps):
-                self.env.envs[0].render()
+                self.env.envs[0].render() # Added
                 act, log_prob_act, value, next_hidden_state = self.predict(obs, hidden_state, done)
                 act_compass = self.map_int_to_char(act) # Added compass
                 next_obs, rew, done, info = self.env.step(act_compass) # Added compass
@@ -220,10 +241,11 @@ class PPO(BaseAgent):
                     for done_step in it:
                         if done_step:
                             print("Episode {} for env {} completed successfully after {} time steps with total reward = {}.".format(cur_episode, it.multi_index[0], cur_time, rew[it.multi_index]))
-                            performance_writer.writerow({'Episode': cur_episode, 'Env': it.multi_index[0], 'Steps': cur_time, 'Reward': rew[it.multi_index]})                   
-                        elif cur_time == self.n_steps - 1:
-                            print("Episode {} for env {} terminated after {} time steps.".format(cur_episode, it.multi_index[0], cur_time)) #info[0]["episode"]["r"]
-                            performance_writer.writerow({'Episode': cur_episode, 'Env': it.multi_index[0], 'Steps': cur_time, 'Reward': rew[it.multi_index]})
+                            log_writer.writerow({'Episode': cur_episode, 'Env': it.multi_index[0], 'Steps': cur_time, 'Reward': rew[it.multi_index]})                   
+                            cur_time = 0 # Added
+                        # elif cur_time == self.n_steps - 1:
+                        #     print("Episode {} for env {} terminated after {} time steps.".format(cur_episode, it.multi_index[0], cur_time)) #info[0]["episode"]["r"]
+                        #     performance_writer.writerow({'Episode': cur_episode, 'Env': it.multi_index[0], 'Steps': cur_time, 'Reward': rew[it.multi_index]})
                 cur_time +=1 # Added
             cur_episode += 1 # Added
             value_batch = self.storage.value_batch[:self.n_steps]
@@ -249,10 +271,12 @@ class PPO(BaseAgent):
                 self.storage_valid.compute_estimates(self.gamma, self.lmbda, self.use_gae, self.normalize_adv)
 
             # Optimize policy & valueq
-            summary = self.optimize()
+            summary = self.optimize()           
+            performance_writer.writerow({'Episode': cur_episode-1, 'Loss/pi': summary['Loss/pi'], 'Loss/v': summary['Loss/v'], 'Loss/entropy': summary['Loss/entropy']})                   
+    
 
             # Log the training-procedure (Removed)
-            
+
             self.t += self.n_steps * self.n_envs
 
             self.optimizer = adjust_lr(self.optimizer, self.learning_rate, self.t, num_timesteps)
