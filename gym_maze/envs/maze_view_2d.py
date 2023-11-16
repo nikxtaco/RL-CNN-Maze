@@ -54,16 +54,16 @@ class MazeView2D:
         self.__robot = self.entrance
 
         #ADDED
-        self.__object = np.random.randint(0, high=self.maze_size, size=2)
+        self.__object = np.random.randint(0, high=self.maze_size[0]-1, size=2)
 
         if self.__enable_render is True:
             # Create a background
             self.background = pygame.Surface(self.screen.get_size()).convert()
-            self.background.fill((255, 255, 255))
+            self.background.fill((158, 85, 2, 255))
 
             # Create a layer for the maze
             self.maze_layer = pygame.Surface(self.screen.get_size()).convert_alpha()
-            self.maze_layer.fill((0, 0, 0, 0,))
+            self.maze_layer.fill((158, 85, 2, 255))
 
             # show the maze
             self.__draw_maze()
@@ -125,11 +125,11 @@ class MazeView2D:
         self.__robot = self.entrance
 
         # Place the object at a new random position
-        self.__object = np.random.randint(0, high=self.maze_size, size=2)
+        self.__object = np.random.randint(0, high=self.maze_size[0]-1, size=2)
 
         # Re-draw everything
         if self.__enable_render is True:
-            self.background.fill((255, 255, 255))
+            self.background.fill((204, 240, 252, 255)) # maze background color
             self.maze_layer.fill((0, 0, 0, 0,))
             self.__draw_maze()
             self.__draw_portals()
@@ -175,6 +175,7 @@ class MazeView2D:
             self.__draw_entrance()
             self.__draw_goal()
             self.__draw_portals()
+            self.__draw_object() # Added
             self.__draw_robot()
 
 
@@ -192,7 +193,7 @@ class MazeView2D:
         if self.__enable_render is False:
             return
         
-        line_colour = (0, 0, 0, 255)
+        line_colour = (9, 111, 145, 255)
         wall_thickness = 3
 
         # drawing the horizontal lines
@@ -216,7 +217,7 @@ class MazeView2D:
                         dirs += dir
                 self.__cover_walls(x, y, dirs)
 
-    def __cover_walls(self, x, y, dirs, colour=(0, 255, 255, 15)):
+    def __cover_walls(self, x, y, dirs, colour=(255, 255, 255, 0)):
 
         if self.__enable_render is False:
             return
@@ -247,32 +248,32 @@ class MazeView2D:
 
             pygame.draw.line(self.maze_layer, colour, line_head, line_tail, wall_thickness)
 
-    def __draw_robot(self, colour=(0, 0, 200), transparency=255):
+    def __draw_robot(self, colour=(77, 58, 242), transparency=255):
 
         if self.__enable_render is False:
             return
         
-        x = int(self.__robot[0] * self.CELL_W + self.CELL_W * 0.5 + 0.5)
+        x = int(self.__robot[0] * self.CELL_W + self.CELL_W * 0.5 + 0.)
         y = int(self.__robot[1] * self.CELL_H + self.CELL_H * 0.5 + 0.5)
-        r = int(min(self.CELL_W, self.CELL_H)/5 + 0.5)
+        r = int(min(self.CELL_W, self.CELL_H)/5 + 1)
 
         pygame.draw.circle(self.maze_layer, colour + (transparency,), (x, y), r)
 
-    def __draw_entrance(self, colour=(0, 0, 50), transparency=235):
+    def __draw_entrance(self, colour=(106, 143, 212), transparency=235):
 
         self.__colour_cell(self.entrance, colour=colour, transparency=transparency)
 
-    def __draw_goal(self, colour=(0, 150, 0), transparency=235):
+    def __draw_goal(self, colour=(116, 219, 182), transparency=235):
 
         self.__colour_cell(self.goal, colour=colour, transparency=transparency)
 
-    def __draw_object(self, colour=(150, 0, 0), transparency=255):
+    def __draw_object(self, colour=(237, 146, 121), transparency=255):
         if self.__enable_render is False:
             return
         
         x = int(self.__object[0] * self.CELL_W + self.CELL_W * 0.5 + 0.5)
         y = int(self.__object[1] * self.CELL_H + self.CELL_H * 0.5 + 0.5)
-        r = int(min(self.CELL_W, self.CELL_H)/5 + 0.5)
+        r = int(min(self.CELL_W, self.CELL_H)/5 + 1)
 
         pygame.draw.circle(self.maze_layer, colour + (transparency,), (x, y), r)
 
