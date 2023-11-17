@@ -58,7 +58,6 @@ with open(PERFORMANCE_FILE, 'r') as csvfile:
         # Calculate the starting and ending episodes for the current data point
         start_episode = (episode // window_size) * window_size
         end_episode = start_episode + window_size
-        print(f'start: {start_episode} and end: {end_episode}')
 
         # Check if the episode is within the specified range
         if start_episode <= episode < end_episode:
@@ -89,7 +88,6 @@ with open(PERFORMANCE_FILE, 'r') as csvfile:
         # Calculate the starting and ending episodes for the current data point
         start_episode = (episode // window_size) * window_size
         end_episode = start_episode + window_size
-        print(f'start: {start_episode} and end: {end_episode}')
 
         # Check if the episode is within the specified range
         if start_episode <= episode < end_episode:
@@ -121,7 +119,6 @@ with open(PERFORMANCE_FILE, 'r') as csvfile:
         # Calculate the starting and ending episodes for the current data point
         start_episode = (episode // window_size) * window_size
         end_episode = start_episode + window_size
-        print(f'start: {start_episode} and end: {end_episode}')
 
         # Check if the episode is within the specified range
         if start_episode <= episode < end_episode:
@@ -153,7 +150,6 @@ with open(PERFORMANCE_FILE, 'r') as csvfile:
         # Calculate the starting and ending episodes for the current data point
         start_episode = (episode // window_size) * window_size
         end_episode = start_episode + window_size
-        print(f'start: {start_episode} and end: {end_episode}')
 
         # Check if the episode is within the specified range
         if start_episode <= episode < end_episode:
