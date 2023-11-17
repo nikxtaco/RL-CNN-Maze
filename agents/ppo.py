@@ -195,6 +195,11 @@ class PPO(BaseAgent):
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writeheader()
 
+        
+        csvfile = open(log_file, 'a', newline='')
+        fieldnames = ['Episode', 'Env', 'Steps', 'Reward']
+        log_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
         if os.path.exists(performance_file):
             with open(performance_file, 'r') as csvfile:
                 reader = csv.reader(csvfile)
@@ -203,29 +208,25 @@ class PPO(BaseAgent):
                     cur_episode = int(rows[-1][0]) + 1
                 else:
                     with open(performance_file, 'w', newline='') as csvfile:
-                        fieldnames = ['Episode', 'Loss/pi', 'Loss/v', 'Loss/entropy']
+                        fieldnames = ['Episode', 'CumulativeReward', 'Loss/pi', 'Loss/v', 'Loss/entropy']
                         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                         writer.writeheader()
         else:
             with open(performance_file, 'w', newline='') as csvfile:
-                fieldnames = ['Episode', 'Loss/pi', 'Loss/v', 'Loss/entropy']
+                fieldnames = ['Episode', 'CumulativeReward', 'Loss/pi', 'Loss/v', 'Loss/entropy']
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
                 writer.writeheader()
 
-        csvfile = open(log_file, 'a', newline='')
-        fieldnames = ['Episode', 'Env', 'Steps', 'Reward']
-        log_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
         csvfile = open(performance_file, 'a', newline='')
-        fieldnames = ['Episode', 'Loss/pi', 'Loss/v', 'Loss/entropy']
+        fieldnames = ['Episode', 'CumulativeReward', 'Loss/pi', 'Loss/v', 'Loss/entropy']
         performance_writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         cur_time = 0 # Added
         while self.t < num_timesteps:
             # Run Policy
             self.policy.eval()
-            # cur_time = 0 # Added
-            # self.env.reset() # Added
+            print('Reseting cumulative reward per episode to 0.')
+            cumulative_rew_per_ep = 0 # Added
             for i in range(self.n_steps):
                 self.env.envs[0].render() # Added
                 act, log_prob_act, value, next_hidden_state = self.predict(obs, hidden_state, done)
@@ -235,18 +236,21 @@ class PPO(BaseAgent):
                 obs = next_obs
                 hidden_state = next_hidden_state
                 # print(f'Step: {i}, done: {done}, rew: {rew}')
-                # print(f'Info: {info}')
+                with np.nditer(np.array(rew), flags=['multi_index']) as it:
+                    for rew_step in it:
+                        cumulative_rew_per_ep += rew_step
                 # Added an iterator to print episode stats
                 with np.nditer(np.array(done), flags=['multi_index']) as it:
+                    # print(f'Dones: {done}')
+                    # print(f'Rewards: {rew}')
+                    # print(f'Info: {info}')
                     for done_step in it:
-                        if done_step:
+                        if done_step and info[it.multi_index[0]]['TimeLimit.truncated']!=True:
                             print("Episode {} for env {} completed successfully after {} time steps with total reward = {}.".format(cur_episode, it.multi_index[0], cur_time, rew[it.multi_index]))
                             log_writer.writerow({'Episode': cur_episode, 'Env': it.multi_index[0], 'Steps': cur_time, 'Reward': rew[it.multi_index]})                   
                             cur_time = 0 # Added
-                        # elif cur_time == self.n_steps - 1:
-                        #     print("Episode {} for env {} terminated after {} time steps.".format(cur_episode, it.multi_index[0], cur_time)) #info[0]["episode"]["r"]
-                        #     performance_writer.writerow({'Episode': cur_episode, 'Env': it.multi_index[0], 'Steps': cur_time, 'Reward': rew[it.multi_index]})
                 cur_time +=1 # Added
+            print(f'Episode {cur_episode} ended with a cumulative reward of {cumulative_rew_per_ep}.')
             cur_episode += 1 # Added
             value_batch = self.storage.value_batch[:self.n_steps]
             _, _, last_val, hidden_state = self.predict(obs, hidden_state, done)
@@ -272,7 +276,7 @@ class PPO(BaseAgent):
 
             # Optimize policy & valueq
             summary = self.optimize()           
-            performance_writer.writerow({'Episode': cur_episode-1, 'Loss/pi': summary['Loss/pi'], 'Loss/v': summary['Loss/v'], 'Loss/entropy': summary['Loss/entropy']})                   
+            performance_writer.writerow({'Episode': cur_episode-1, 'CumulativeReward': cumulative_rew_per_ep, 'Loss/pi': summary['Loss/pi'], 'Loss/v': summary['Loss/v'], 'Loss/entropy': summary['Loss/entropy']})                   
     
 
             # Log the training-procedure (Removed)
@@ -281,12 +285,23 @@ class PPO(BaseAgent):
 
             self.optimizer = adjust_lr(self.optimizer, self.learning_rate, self.t, num_timesteps)
             
+            # Added below block to reset maze after n_steps
+            if cur_time > self.n_steps - 1:
+                obs = self.env.reset()
+                hidden_state = np.zeros((self.n_envs, self.storage.hidden_state_size))
+                done = np.zeros(self.n_envs)
+                cur_time = 0
+                print("Maze was reset after {} time steps.".format(cur_time))
+
             # Save the model
-            if self.t > ((checkpoint_cnt+1) * save_every):
+            if self.t == ((checkpoint_cnt+1) * save_every):
                 print("Saving model.")
+                # torch.save({'model_state_dict': self.policy.state_dict(),
+                #             'optimizer_state_dict': self.optimizer.state_dict()},
+                #              checkpoint_path + str(self.t) + '.pt') # Changed logdir
                 torch.save({'model_state_dict': self.policy.state_dict(),
                             'optimizer_state_dict': self.optimizer.state_dict()},
-                             checkpoint_path + str(self.t) + '.pt') # Changed logdir
+                             checkpoint_path + str((cur_episode)*self.n_envs*self.n_steps) + '.pt') # Changed logdir
                 checkpoint_cnt += 1
         
         csvfile.close() # Added

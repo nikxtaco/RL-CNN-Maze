@@ -158,7 +158,7 @@ class MazeEnvSample10x10(MazeEnv):
 class MazeEnvRandom10x10(MazeEnv):
 
     def __init__(self, enable_render=True, seed=None, target=0):
-        super(MazeEnvRandom10x10, self).__init__(maze_size=(8, 8), enable_render=enable_render, seed=seed, target=target)
+        super(MazeEnvRandom10x10, self).__init__(maze_size=(6, 6), enable_render=enable_render, seed=seed, target=target)
 
 
 class MazeEnvSample3x3(MazeEnv):

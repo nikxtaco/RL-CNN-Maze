@@ -15,10 +15,17 @@ python setup.py install
 - The maze is only reset when the agent has reached its goal.
 <!--- The maze is reset either when (i) the episode has ended or (ii) the agent has reached its goal. -->
 
+## Reward Details
+- Agent gets +1 for attaining the goal state.
+- Agent gets -0.1/(maze_size[0]*maze_size[1]) penalty for every timestep that it doesn't achieve the goal state.
+- So if the agent doesn't attain the goal state even once during an episode, the cumulative reward will be approx. penalty*n_steps*n_envs. If it attains the goal state exactly once, the cumulative reward will be approx. (penalty*n_steps*n_envs)+(number of times the goal was attained).
+
 ## Stats Recorded
 - In log_agent#.csv file: For each agent, separate log files are recorded with the episode number and environment number. The number of timesteps when the agent reaches the goal state (since the last maze reset) is recorded.
 <!-- should the penalty be explicitly removed at the end of the episode if atleast once the goal has been reached within the episode?-->
-- In performance_agent#.csv file: For each agent, separate performance files are recorded with the episode number and the following metrics for that episode - pi loss, value loss, entropy loss.
+- In performance_agent#.csv file: For each agent, separate performance files are recorded with the episode number and the following metrics for that episode - cumulative reward, pi loss, value loss, entropy loss.
+
+<!--checkpointing??-->
 
 ## Current Functionality Summary
 
