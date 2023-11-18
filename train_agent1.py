@@ -16,7 +16,7 @@ def make_env(rank):
     return init
 
 if __name__=='__main__':
-    MAX_T = 2000
+    MAX_T = 500000
     N_ENVS = 2
     N_STEPS = 500
     RENDER_MAZE = True # Make False
@@ -24,7 +24,7 @@ if __name__=='__main__':
     LOAD_FROM_TIMESTEP = str(1000)
     LOG_FILE = "log_agent1.csv"
     PERFORMANCE_FILE = "performance_agent1.csv"
-    N_CHECKPOINTS = 2
+    N_CHECKPOINTS = 10
 
     # Set Device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
