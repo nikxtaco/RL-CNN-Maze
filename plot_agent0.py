@@ -45,7 +45,7 @@ import numpy as np
 LOG_FILE = "log_agent0.csv"
 PERFORMANCE_FILE = "performance_agent0.csv"
 
-window_size = 50
+window_size = 250
 episode_rewards = {}
 
 with open(PERFORMANCE_FILE, 'r') as csvfile:
