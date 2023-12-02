@@ -16,11 +16,11 @@ def make_env(rank):
     return init
 
 if __name__=='__main__':
-    MAX_T = 476000
+    MAX_T = 100000
     N_ENVS = 2
     N_STEPS = 500
     RENDER_MAZE = True # Make False
-    CHECKPOINT_PATH = 'saved_models/agent1/model_'
+    CHECKPOINT_PATH = 'saved_models/agent1/'
     LOAD_FROM_TIMESTEP = str(1000)
     LOG_FILE = "log_agent1.csv"
     PERFORMANCE_FILE = "performance_agent1.csv"
