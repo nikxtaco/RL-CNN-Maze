@@ -24,7 +24,7 @@ if __name__=='__main__':
     LOAD_FROM_TIMESTEP = str(1000)
     LOG_FILE = "log_agent0.csv"
     PERFORMANCE_FILE = "performance_agent0.csv"
-    N_CHECKPOINTS = 2 #??
+    N_CHECKPOINTS = 2
 
     # Set Device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

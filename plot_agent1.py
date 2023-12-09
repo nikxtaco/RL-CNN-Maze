@@ -5,7 +5,7 @@ import numpy as np
 LOG_FILE = "log_agent1.csv"
 PERFORMANCE_FILE = "performance_agent1.csv"
 
-window_size = 250
+window_size = 100
 episode_rewards = {}
 
 with open(PERFORMANCE_FILE, 'r') as csvfile:
