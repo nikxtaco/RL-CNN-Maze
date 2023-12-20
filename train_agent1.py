@@ -16,7 +16,7 @@ def make_env(rank):
     return init
 
 if __name__=='__main__':
-    MAX_T = 5000000
+    MAX_T = 3000000
     N_ENVS = 2
     N_STEPS = 500
     RENDER_MAZE = True # Make False
@@ -24,7 +24,7 @@ if __name__=='__main__':
     LOAD_FROM_TIMESTEP = str(1000)
     LOG_FILE = "log_agent1.csv"
     PERFORMANCE_FILE = "performance_agent1.csv"
-    N_CHECKPOINTS = 20
+    N_CHECKPOINTS = 5
 
     # Set Device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -64,7 +64,7 @@ if __name__=='__main__':
         checkpoint_files = [file for file in all_files if file.endswith('.pt')]
 
         if checkpoint_files:
-            latest_checkpoint = max(checkpoint_files)
+            latest_checkpoint = str(max(int(checkpoint_file[:-3]) for checkpoint_file in checkpoint_files)) + '.pt'
             checkpoint_path = os.path.join(CHECKPOINT_PATH, latest_checkpoint)
             checkpoint = torch.load(checkpoint_path)
             print(f'Loading checkpoint from {checkpoint_path}')

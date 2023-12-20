@@ -16,7 +16,7 @@ def make_env(rank):
     return init
 
 if __name__=='__main__':
-    MAX_T = 1000000
+    MAX_T = 3000000
     N_ENVS = 2
     N_STEPS = 500
     RENDER_MAZE = True # Make False

@@ -227,6 +227,7 @@ class PPO(BaseAgent):
             self.policy.eval()
             print('Reseting cumulative reward per episode to 0.')
             cumulative_rew_per_ep = 0 # Added
+            print(self.n_steps)
             for i in range(self.n_steps):
                 self.env.envs[0].render() # Added
                 act, log_prob_act, value, next_hidden_state = self.predict(obs, hidden_state, done)
